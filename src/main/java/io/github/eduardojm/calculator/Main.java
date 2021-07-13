@@ -1,12 +1,11 @@
 package io.github.eduardojm.calculator;
 
 import io.github.eduardojm.calculator.core.*;
-import io.github.eduardojm.calculator.core.tokens.TokenExpression;
 
 public class Main {
     public static void main(String[] args) {
 
-        var testing = "10 + 20 * 2";
+        var testing = "10 * (2 + 40)";
         var stream = new CharStream(testing);
         var lexer = new Lexer(stream);
         var parser = new Parser(lexer);

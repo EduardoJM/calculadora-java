@@ -1,7 +1,6 @@
 package io.github.eduardojm.calculator.core;
 
 import io.github.eduardojm.calculator.core.tokens.TokenBinary;
-import io.github.eduardojm.calculator.core.tokens.TokenExpression;
 import io.github.eduardojm.calculator.core.tokens.TokenOperator;
 import io.github.eduardojm.calculator.core.tokens.TokenParentheses;
 
@@ -49,18 +48,18 @@ public class Parser {
         if (peekToken.getType().equals("parentheses")) {
             TokenParentheses parentheses = (TokenParentheses) peekToken;
             if (parentheses.getValue() == '(') {
+                this.lexer.next(); // skip parentheses
                 var expr = this.parseExpression();
                 var anotherPeek = this.lexer.peek();
                 if (anotherPeek.getType().equals("parentheses")) {
                     TokenParentheses other = (TokenParentheses) anotherPeek;
                     if (other.getValue() != ')') {
+                        // not match ending parentheses
                         throw new Exception("Unknown token here: " + other.getValue());
                     }
-                    this.lexer.next();
-                } else {
-                    throw new Exception("Unknown token type here: " + anotherPeek.getType());
+                    this.lexer.next(); // skip closing parentheses
+                    return expr;
                 }
-                return expr;
             }
         } else if (peekToken.getType().equals("number")) {
             return this.lexer.next();
