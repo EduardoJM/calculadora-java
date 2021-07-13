@@ -5,7 +5,7 @@ import io.github.eduardojm.calculator.core.*;
 public class Main {
     public static void main(String[] args) {
 
-        var testing = "10 * (2 + 40)";
+        var testing = "log(5) * (2 + 40)";
         var stream = new CharStream(testing);
         var lexer = new Lexer(stream);
         var parser = new Parser(lexer);

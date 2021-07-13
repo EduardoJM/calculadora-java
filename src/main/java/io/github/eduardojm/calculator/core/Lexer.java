@@ -1,5 +1,6 @@
 package io.github.eduardojm.calculator.core;
 
+import io.github.eduardojm.calculator.core.tokens.TokenIdentifier;
 import io.github.eduardojm.calculator.core.tokens.TokenNumber;
 import io.github.eduardojm.calculator.core.tokens.TokenOperator;
 import io.github.eduardojm.calculator.core.tokens.TokenParentheses;
@@ -52,6 +53,8 @@ public class Lexer {
             return new TokenOperator(this.stream.next());
         } else if (this.isParentheses.test(ch)) {
             return new TokenParentheses(this.stream.next());
+        } else if (this.isIdentifierStart.test(ch)) {
+            return new TokenIdentifier(this.readWhile(this.isIdentifier));
         }
         throw new Exception("Invalid token: " + ch);
     }
@@ -61,6 +64,8 @@ public class Lexer {
     private final CharPredicate isDigit = ch -> Character.isDigit(ch) || ch == '.';
     private final CharPredicate isOperator = ch -> ch == '-' || ch == '+' || ch == '*' || ch == '/' || ch == '^';
     private final CharPredicate isParentheses = ch -> ch == '(' || ch == ')';
+    private final CharPredicate isIdentifierStart = ch -> String.valueOf(ch).matches("[A-z_]");
+    private final CharPredicate isIdentifier = ch -> isIdentifierStart.test(ch) || isDigitStart.test(ch);
 
     private String readWhile(CharPredicate condition) {
         StringBuilder str = new StringBuilder();
