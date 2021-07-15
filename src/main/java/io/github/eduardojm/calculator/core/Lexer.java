@@ -5,6 +5,8 @@ import io.github.eduardojm.calculator.core.tokens.TokenNumber;
 import io.github.eduardojm.calculator.core.tokens.TokenOperator;
 import io.github.eduardojm.calculator.core.tokens.TokenParentheses;
 
+import java.util.Optional;
+
 public class Lexer {
     private final CharStream stream;
     private Token current;
@@ -14,19 +16,19 @@ public class Lexer {
         this.current = null;
     }
 
-    public Token peek() throws Exception {
+    public Optional<Token> peek() throws Exception {
         if (this.current != null) {
-            return this.current;
+            return Optional.of(this.current);
         }
-        this.current = this.readNext();
-        return this.current;
+        this.current = this.readNext().orElse(null);
+        return Optional.ofNullable(this.current);
     }
 
-    public Token next() throws Exception {
+    public Optional<Token> next() throws Exception {
         Token tok = this.current;
         this.current = null;
         if (tok != null) {
-            return tok;
+            return Optional.of(tok);
         }
         return this.readNext();
     }
@@ -41,20 +43,20 @@ public class Lexer {
         return new TokenNumber(parsedNumber);
     }
 
-    private Token readNext() throws Exception {
+    private Optional<Token> readNext() throws Exception {
         this.readWhile(this.isWhiteSpace);
         if (this.stream.eof()) {
-            return null;
+            return Optional.empty();
         }
         var ch = this.stream.peek();
         if (isDigitStart.test(ch)) {
-            return this.parseNumber();
+            return Optional.of(this.parseNumber());
         } else if (this.isOperator.test(ch)) {
-            return new TokenOperator(this.stream.next());
+            return Optional.of(new TokenOperator(this.stream.next()));
         } else if (this.isParentheses.test(ch)) {
-            return new TokenParentheses(this.stream.next());
+            return Optional.of(new TokenParentheses(this.stream.next()));
         } else if (this.isIdentifierStart.test(ch)) {
-            return new TokenIdentifier(this.readWhile(this.isIdentifier));
+            return Optional.of(new TokenIdentifier(this.readWhile(this.isIdentifier)));
         }
         throw new Exception("Invalid token: " + ch);
     }

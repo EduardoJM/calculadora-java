@@ -2,8 +2,10 @@ package io.github.eduardojm.calculator.core;
 
 import io.github.eduardojm.calculator.core.tokens.*;
 
+import java.util.Optional;
+
 public class Parser {
-    private Lexer lexer;
+    private final Lexer lexer;
 
     public Parser(Lexer input) {
         this.lexer = input;
@@ -17,20 +19,30 @@ public class Parser {
     }
 
     private Token parseExpression() throws Exception {
-        return this.parseMaybeBinary(this.parseAtom(), 0);
+        var atom = this.parseAtom();
+        if (atom.isEmpty()) {
+            throw new Exception("Unknown expression to parse.");
+        }
+        return this.parseMaybeBinary(atom.get(), 0);
     }
 
     private Token parseMaybeBinary(Token left, int myPrecedence) throws Exception {
-        var peekToken = this.lexer.peek();
-        if (peekToken == null) {
+        var peek = this.lexer.peek();
+        if (peek.isEmpty()) {
+            // if the next token is not present, return the left.
             return left;
         }
+        var peekToken = peek.get();
         if (peekToken.getType().equals("operator")) {
             TokenOperator operator = (TokenOperator)peekToken;
             var hisPrecedence = operator.getPrecedence();
             if (hisPrecedence > myPrecedence) {
                 this.lexer.next();
-                var right = this.parseMaybeBinary(this.parseAtom(), hisPrecedence);
+                var atom = this.parseAtom();
+                if (atom.isEmpty()) {
+                    return left;
+                }
+                var right = this.parseMaybeBinary(atom.get(), hisPrecedence);
                 var binary = new TokenBinary(left, right, operator.getValue());
                 return this.parseMaybeBinary(binary, myPrecedence);
             }
@@ -41,7 +53,11 @@ public class Parser {
     private Token parseParenthesesEnclosed() throws Exception {
         this.lexer.next(); // skip parentheses
         var expr = this.parseExpression();
-        var anotherPeek = this.lexer.peek();
+        var otherSideToken = this.lexer.peek();
+        if (otherSideToken.isEmpty()) {
+            throw new Exception("Opened parentheses must be closed.");
+        }
+        var anotherPeek = otherSideToken.get();
         if (anotherPeek.getType().equals("parentheses")) {
             TokenParentheses other = (TokenParentheses) anotherPeek;
             if (other.getValue() != ')') {
@@ -54,22 +70,39 @@ public class Parser {
         throw new Exception("Invalid Token Type: " + anotherPeek.getType());
     }
 
-    private Token parseAtom() throws Exception {
-        var peekToken = this.lexer.peek();
-        if (peekToken.getType().equals("parentheses")) {
-            TokenParentheses parentheses = (TokenParentheses) peekToken;
-            if (parentheses.getValue() == '(') {
-                return this.parseParenthesesEnclosed();
+    private Optional<Token> parseAtom() throws Exception {
+        var peek = this.lexer.peek();
+        if (peek.isEmpty()) {
+            return Optional.empty();
+        }
+        var peekToken = peek.get();
+        switch (peekToken.getType()) {
+            case "parentheses" -> {
+                TokenParentheses parentheses = (TokenParentheses) peekToken;
+                if (parentheses.getValue() == '(') {
+                    return Optional.of(this.parseParenthesesEnclosed());
+                }
             }
-        } else if (peekToken.getType().equals("identifier")) {
-            TokenIdentifier name = (TokenIdentifier)lexer.next();
-            peekToken = this.lexer.peek();
-            if (peekToken.getType().equals("parentheses")) {
-                var expr = this.parseParenthesesEnclosed();
-                return new TokenFunction(name.getValue(), expr);
+            case "identifier" -> {
+                lexer.next(); // skip the peeked identifier
+
+                TokenIdentifier name = (TokenIdentifier) peekToken;
+                peek = this.lexer.peek();
+                if (peek.isPresent()) {
+                    peekToken = peek.get();
+                    if (peekToken.getType().equals("parentheses")) {
+                        var expr = this.parseParenthesesEnclosed();
+                        return Optional.of(new TokenFunction(name.getValue(), expr));
+                    } else {
+                        return Optional.of(name);
+                    }
+                } else {
+                    return Optional.of(name);
+                }
             }
-        } else if (peekToken.getType().equals("number")) {
-            return this.lexer.next();
+            case "number" -> {
+                return this.lexer.next();
+            }
         }
         throw new Exception("Unknown token type: " + peekToken.getType());
     };
