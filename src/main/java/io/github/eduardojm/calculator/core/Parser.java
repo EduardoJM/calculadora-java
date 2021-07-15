@@ -91,8 +91,14 @@ public class Parser {
                 if (peek.isPresent()) {
                     peekToken = peek.get();
                     if (peekToken.getType().equals("parentheses")) {
-                        var expr = this.parseParenthesesEnclosed();
-                        return Optional.of(new TokenFunction(name.getValue(), expr));
+                        var parenthesesToken = (TokenParentheses) peekToken;
+                        if (parenthesesToken.getValue() == '(') {
+                            var expr = this.parseParenthesesEnclosed();
+                            return Optional.of(new TokenFunction(name.getValue(), expr));
+                        } else {
+                            // can be closing parentheses.
+                            return Optional.of(name);
+                        }
                     } else {
                         return Optional.of(name);
                     }
