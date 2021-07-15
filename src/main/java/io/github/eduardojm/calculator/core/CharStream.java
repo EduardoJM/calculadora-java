@@ -1,7 +1,7 @@
 package io.github.eduardojm.calculator.core;
 
 public final class CharStream {
-    private String buffer;
+    private final String buffer;
     private int position;
 
     public CharStream(String input) {

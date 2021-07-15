@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class Evaluator {
     private final Token expression;
-    private Map<String, InternFunction> functions;
+    private final Map<String, InternFunction> functions;
 
     public Evaluator(Token expr) {
         this.expression = expr;

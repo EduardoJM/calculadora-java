@@ -2,11 +2,14 @@ package io.github.eduardojm.calculator;
 
 import io.github.eduardojm.calculator.core.*;
 
-public class Main {
-    public static void main(String[] args) {
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Scanner;
 
-        var testing = "log(5) * (2 + 40)";
-        var stream = new CharStream(testing);
+public class Main {
+    private static void evaluate(String str) {
+        var stream = new CharStream(str);
         var lexer = new Lexer(stream);
         var parser = new Parser(lexer);
 
@@ -17,17 +20,22 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
-        /*
-        while(!lexer.eof()) {
+    public static void main(String[] args) {
+        var buffer = new BufferedReader(new InputStreamReader(System.in));
+
+        while (true) {
+            System.out.println("Digite uma expressão a ser cálculada (ou \\q para sair):");
             try {
-                var token = lexer.next();
-                System.out.println(token.getType());
+                String expr = buffer.readLine();
+                if (expr.startsWith("\\q")) {
+                    break;
+                }
+                evaluate(expr);
             } catch (Exception e) {
                 e.printStackTrace();
-                break;
             }
         }
-        */
     }
 }
