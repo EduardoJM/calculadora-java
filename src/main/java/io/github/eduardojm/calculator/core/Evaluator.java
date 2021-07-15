@@ -2,6 +2,7 @@ package io.github.eduardojm.calculator.core;
 
 import io.github.eduardojm.calculator.core.tokens.TokenBinary;
 import io.github.eduardojm.calculator.core.tokens.TokenFunction;
+import io.github.eduardojm.calculator.core.tokens.TokenIdentifier;
 import io.github.eduardojm.calculator.core.tokens.TokenNumber;
 
 import java.util.HashMap;
@@ -10,12 +11,16 @@ import java.util.Map;
 public class Evaluator {
     private final Token expression;
     private final Map<String, InternFunction> functions;
+    private final Map<String, Float> constants;
 
     public Evaluator(Token expr) {
         this.expression = expr;
         this.functions = new HashMap<>();
         this.functions.put("ln", value -> (float)Math.log(value));
         this.functions.put("log", value -> (float)Math.log10(value));
+        this.constants = new HashMap<>();
+        this.constants.put("pi", (float)Math.PI);
+        this.constants.put("e", (float)Math.E);
     }
 
     public float evaluate() throws Exception {
@@ -49,6 +54,13 @@ public class Evaluator {
                     throw new Exception("Unknown function: " + func.getName());
                 }
                 return functions.get(func.getName()).eval(this.eval(func.getValue()));
+            }
+            case "identifier" -> {
+                TokenIdentifier identifier = (TokenIdentifier) token;
+                if (!this.constants.containsKey(identifier.getValue())) {
+                    throw new Exception("Unknown constant: " + identifier.getValue());
+                }
+                return constants.get(identifier.getValue());
             }
         }
         throw new Exception("Unknown token: " + token.getType());
