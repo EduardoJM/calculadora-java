@@ -39,12 +39,20 @@ public final class CharStream {
     }
 
     /**
-     * Ge the current character and jump the position to the next character.
+     * Gets the current character and jump the position to the next character.
      * @return Returns the current character.
      */
     public char next() {
         char chr = this.buffer.charAt(this.position);
         this.position = this.position + 1;
         return chr;
+    }
+
+    /**
+     * Gets the current position of the buffer string.
+     * @return Returns the current position of the buffer string.
+     */
+    public int getPosition() {
+        return position;
     }
 }
